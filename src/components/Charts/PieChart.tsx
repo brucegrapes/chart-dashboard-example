@@ -34,14 +34,15 @@ ChartJS.register(
 function PieChart({
     data,
     options = defaultOptions,
-    chartTitle = "Pie Chart"
+    chartTitle = "Pie Chart",
+    showFilters = true,
 }: PieChartProps) {
   // Ensure labels is always defined
   const safeData = {
     ...data,
     labels: data.labels ?? [],
   };
-
+  if(showFilters){
   return (
     <ChartWithFilters initialData={safeData} type='pie'>
       {({ data }) => (
@@ -59,6 +60,22 @@ function PieChart({
       )}
     </ChartWithFilters>
   );
+}else{
+    return (
+        <Pie
+          className="drag-cancel"
+          data={safeData}
+            options={{
+            ...options,
+            title: {
+                display: true,
+                text: chartTitle,
+            },
+          }}
+          redraw
+        />
+    );
+}
 }
 
 export default PieChart;

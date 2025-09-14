@@ -19,16 +19,6 @@ import ReactGridLayout from "react-grid-layout";
 import BarChart from "@/components/Charts/BarChart";
 import PieChart from "@/components/Charts/PieChart";
 
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend,
-  ArcElement
-);
-
 const options = {
   responsive: true,
   plugins: {

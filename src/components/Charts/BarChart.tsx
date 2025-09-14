@@ -18,7 +18,7 @@ ChartJS.register(
   Title,
   Tooltip,
   Legend,
-  BarElement,
+  BarElement
 );
 
 const defaultOptions = {
@@ -43,13 +43,32 @@ interface BarChartProps {
 function BarChart({
   data,
   options = defaultOptions,
-  chartTitle = "Bar Chart"
+  chartTitle = "Bar Chart",
+  showFilters = true,
 }: BarChartProps) {
-  return (
-    <ChartWithFilters initialData={data} type='bar'>
-      {({ data }) => (
+  if (showFilters) {
+    return (
+      <ChartWithFilters initialData={data} type='bar'>
+        {({ data }) => (
+          <Bar
+            className='drag-cancel'
+            options={{
+              ...options,
+              title: {
+                display: true,
+                text: chartTitle,
+              },
+            }}
+            data={data}
+          />
+        )}
+      </ChartWithFilters>
+    );
+  } else {
+    return (
+      <>
         <Bar
-          className="drag-cancel"
+          className='drag-cancel'
           options={{
             ...options,
             title: {
@@ -57,11 +76,12 @@ function BarChart({
               text: chartTitle,
             },
           }}
+          redraw
           data={data}
         />
-      )}
-    </ChartWithFilters>
-  );
+      </>
+    );
+  }
 }
 
 export default BarChart;

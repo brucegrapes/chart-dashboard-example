@@ -75,7 +75,10 @@ export default function FilterPanel({
   };
 
   return (
-    <div className='max-h-[100%] overflow-auto absolute bg-white/30 backdrop-blur-md shadow-lg rounded-lg p-4 drag-cancel bg-transparent'>
+    <div 
+      className='max-h-[100%] overflow-auto absolute bg-white/30 backdrop-blur-sm shadow-lg rounded-lg p-4 drag-cancel bg-transparent'
+      style={{ backgroundColor: 'transparent'}}
+      >
       <div className='flex justify-between items-center'>
         <button
           onClick={(e) => {
@@ -154,7 +157,7 @@ export default function FilterPanel({
           {type === "bar" && (
             <div>
               <label className='block text-sm font-medium text-gray-700 mb-1'>
-                Date Range
+                Range Filter
               </label>
               <div className='grid grid-cols-2 gap-2'>
                 <select

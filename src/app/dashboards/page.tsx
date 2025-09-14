@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { DashboardService } from '@/services/dashboardService';
+import DashboardPreview from '@/components/DashboardPreview/DashboardPreview';
 import { SavedDashboard } from '@/types/dashboard';
 
 export default function DashboardList() {
@@ -41,7 +42,7 @@ export default function DashboardList() {
       createdAt: new Date().toISOString()
     };
     DashboardService.saveDashboard(newDashboard);
-    router.push(`/dashboard/${newDashboard.id}`);
+    router.push(`/dashboard/${newDashboard.id}/edit`);
   };
 
   return (
@@ -60,7 +61,7 @@ export default function DashboardList() {
         <table className="min-w-full">
           <thead>
             <tr className="bg-gray-50 border-b">
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Dashboard</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Last Modified</th>
               <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
@@ -69,8 +70,16 @@ export default function DashboardList() {
           <tbody className="bg-white divide-y divide-gray-200">
             {dashboards.map((dashboard) => (
               <tr key={dashboard.id}>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm font-medium text-gray-900">{dashboard.name || 'Untitled'}</div>
+                <td className="px-6 py-4">
+                  <div className="flex items-center gap-4">
+                    <DashboardPreview layout={dashboard.layout} className="shrink-0" />
+                    <div>
+                      <div className="text-sm font-medium text-gray-900">{dashboard.name || 'Untitled'}</div>
+                      <div className="text-sm text-gray-500">
+                        {Object.keys(dashboard.charts || {}).length} charts
+                      </div>
+                    </div>
+                  </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="text-sm text-gray-500">
@@ -84,10 +93,16 @@ export default function DashboardList() {
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                   <button
+                    onClick={() => router.push(`/dashboard/${dashboard.id}/edit`)}
+                    className="text-blue-600 hover:text-blue-900 mr-4"
+                  >
+                    Edit
+                  </button>
+                <button
                     onClick={() => router.push(`/dashboard/${dashboard.id}`)}
                     className="text-blue-600 hover:text-blue-900 mr-4"
                   >
-                    View/Edit
+                    View
                   </button>
                   <button
                     onClick={() => handleDelete(dashboard.id)}
