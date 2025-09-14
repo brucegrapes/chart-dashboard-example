@@ -128,24 +128,3 @@ export const searchByLabel = (
     })),
   };
 };
-
-// Example usage:
-/*
-// Filter monthly sales for a specific date range
-const filteredSales = filterByDateRange(monthlySalesData, 'Jan 2024', 'Jun 2024');
-
-// Filter products by specific names
-const filteredProducts = filterByLabels(productPerformanceData, ['Smartphone X', 'Laptop Pro']);
-
-// Show only products with sales > 200
-const highSellingProducts = filterByThreshold(productPerformanceData, 200, 'greater');
-
-// Sort market share by percentage
-const sortedMarketShare = sortByValue(marketShareData, 'desc');
-
-// Get top 5 revenue channels
-const topRevenue = takeTop(revenueDistributionData, 5);
-
-// Search products containing 'smart'
-const smartProducts = searchByLabel(productPerformanceData, 'smart');
-*/

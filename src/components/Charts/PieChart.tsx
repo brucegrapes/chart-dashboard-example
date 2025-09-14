@@ -56,6 +56,7 @@ function PieChart({
               text: chartTitle,
             },
           }}
+          redraw
         />
       )}
     </ChartWithFilters>

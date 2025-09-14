@@ -9,6 +9,8 @@ import {
   takeTop,
   searchByLabel,
 } from "@/utils/dataFilters";
+import { debounce } from "chart.js/helpers";
+
 
 interface FilterPanelProps {
   data: BarChartData | PieChartData;
@@ -24,39 +26,14 @@ export default function FilterPanel({
 }: FilterPanelProps) {
   const [searchText, setSearchText] = useState("");
   const [selectedLabels, setSelectedLabels] = useState<string[]>([]);
-  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
-  const [topN, setTopN] = useState<number>(5);
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc" | "none">("none");
+  const [topN, setTopN] = useState<number>(data.labels.length);
   const [isExpanded, setIsExpanded] = useState(false);
-
-  const [dateRange, setDateRange] = useState({
-    start: type === "bar" ? data.labels[0] : "",
-    end: type === "bar" ? data.labels[data.labels.length - 1] : "",
-  });
 
   const applyFilters = () => {
     debugger
     try {
       let filteredData = { ...data };
-
-      // 1. Apply search filter if text is entered
-      if (searchText.trim()) {
-        filteredData = searchByLabel(filteredData, searchText);
-      }
-
-      // 2. Apply label selection if any labels are selected
-      if (selectedLabels.length > 0) {
-        filteredData = filterByLabels(filteredData, selectedLabels);
-      }
-
-      // 4. Apply date range filter for bar charts
-      if (type === "bar" && dateRange.start && dateRange.end) {
-        filteredData = filterByDateRange(
-          filteredData as BarChartData,
-          dateRange.start,
-          dateRange.end
-        );
-      }
-
       // 5. Apply sorting
       filteredData = sortByValue(filteredData, sortOrder);
 
@@ -74,9 +51,14 @@ export default function FilterPanel({
     }
   };
 
+  function searchLabels(text: string) {
+    onFilter(searchByLabel({...filteredData}, text))
+  }
+
+
   return (
     <div 
-      className='max-h-[100%] overflow-auto absolute bg-white/30 backdrop-blur-sm shadow-lg rounded-lg p-4 drag-cancel bg-transparent'
+      className={`max-h-[100%] overflow-auto absolute bg-white/30 backdrop-blur-sm ${isExpanded ? 'shadow-lg' : ''} rounded-lg p-4 drag-cancel bg-transparent`}
       style={{ backgroundColor: 'transparent'}}
       >
       <div className='flex justify-between items-center'>
@@ -89,7 +71,6 @@ export default function FilterPanel({
           className='text-gray-500 hover:text-gray-700'
         >
           <div className='flex items-center'>
-            Filters {' '}
             <svg viewBox='0 0 512 512' height='1em'>
               <path d='M0 416c0 17.7 14.3 32 32 32l54.7 0c12.3 28.3 40.5 48 73.3 48s61-19.7 73.3-48L480 448c17.7 0 32-14.3 32-32s-14.3-32-32-32l-246.7 0c-12.3-28.3-40.5-48-73.3-48s-61 19.7-73.3 48L32 384c-17.7 0-32 14.3-32 32zm128 0a32 32 0 1 1 64 0 32 32 0 1 1 -64 0zM320 256a32 32 0 1 1 64 0 32 32 0 1 1 -64 0zm32-80c-32.8 0-61 19.7-73.3 48L32 224c-17.7 0-32 14.3-32 32s14.3 32 32 32l246.7 0c12.3 28.3 40.5 48 73.3 48s61-19.7 73.3-48l54.7 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-54.7 0c-12.3-28.3-40.5-48-73.3-48zM192 128a32 32 0 1 1 0-64 32 32 0 1 1 0 64zm73.3-64C253 35.7 224.8 16 192 16s-61 19.7-73.3 48L32 64C14.3 64 0 78.3 0 96s14.3 32 32 32l86.7 0c12.3 28.3 40.5 48 73.3 48s61-19.7 73.3-48L480 128c17.7 0 32-14.3 32-32s-14.3-32-32-32L265.3 64z'></path>
             </svg>
@@ -98,7 +79,7 @@ export default function FilterPanel({
       </div>
 
       {isExpanded && (
-        <div className='space-y-4'>
+        <div className='space-y-4 mt-4'>
           {/* Search Filter */}
           <div>
             <label className='block text-sm font-medium text-gray-700 mb-1'>
@@ -107,7 +88,10 @@ export default function FilterPanel({
             <input
               type='text'
               value={searchText}
-              onChange={(e) => setSearchText(e.target.value)}
+              onChange={(e) => { 
+                setSearchText(e.target.value)
+                debounce(searchLabels(e.target.value.trim()), 300);
+              }}
               placeholder='Search...'
               className='w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500'
             />
@@ -128,7 +112,6 @@ export default function FilterPanel({
                     type='checkbox'
                     checked={selectedLabels.includes(label)}
                     onChange={(e) => {
-                      const filteredData = { ...data };
                       let selection;
                       if (e.target.checked) {
                         selection = [...selectedLabels, label];
@@ -153,47 +136,6 @@ export default function FilterPanel({
             </div>
           </div>
 
-          {/* Date Range Filter (for bar charts only) */}
-          {type === "bar" && (
-            <div>
-              <label className='block text-sm font-medium text-gray-700 mb-1'>
-                Range Filter
-              </label>
-              <div className='grid grid-cols-2 gap-2'>
-                <select
-                  value={dateRange.start}
-                  onChange={(e) =>
-                    setDateRange({ ...dateRange, start: e.target.value })
-                  }
-                  className='px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500'
-                  aria-label='Start date'
-                  title='Select start date'
-                >
-                  {data.labels.map((label) => (
-                    <option key={label} value={label}>
-                      {label}
-                    </option>
-                  ))}
-                </select>
-                <select
-                  value={dateRange.end}
-                  onChange={(e) =>
-                    setDateRange({ ...dateRange, end: e.target.value })
-                  }
-                  className='px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500'
-                  aria-label='End date'
-                  title='Select end date'
-                >
-                  {data.labels.map((label) => (
-                    <option key={label} value={label}>
-                      {label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-          )}
-
           {/* Sort Order */}
           <div>
             <label className='block text-sm font-medium text-gray-700 mb-1'>
@@ -201,13 +143,22 @@ export default function FilterPanel({
             </label>
             <select
               value={sortOrder}
-              onChange={(e) => setSortOrder(e.target.value as "asc" | "desc")}
+              onChange={(e) => { 
+                const selectedValue = e.target.value as "asc" | "desc"
+                setSortOrder(selectedValue)
+                if(e.target.value === "none"){
+                  onFilter(data);
+                }else{
+                  onFilter(sortByValue(filteredData, selectedValue));
+                }
+              }}
               className='w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500'
               aria-label='Sort order'
               title='Select sort order'
             >
               <option value='asc'>Ascending</option>
               <option value='desc'>Descending</option>
+              <option value='none'>None</option>
             </select>
           </div>
 
@@ -221,7 +172,13 @@ export default function FilterPanel({
               min='1'
               max={data.labels.length}
               value={topN}
-              onChange={(e) => setTopN(Number(e.target.value))}
+              onChange={(e) => { 
+                const currentTopN = Number(e.target.value)
+                setTopN(currentTopN)
+                if (currentTopN > 0 && currentTopN < data.labels.length) {
+                  onFilter(takeTop(filteredData, topN));
+                }
+              }}
               className='w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500'
               aria-label='Number of items to show'
               title='Enter number of items to show'
@@ -244,12 +201,6 @@ export default function FilterPanel({
                 setSelectedLabels([]);
                 setSortOrder("desc");
                 setTopN(5);
-                if (type === "bar") {
-                  setDateRange({
-                    start: data.labels[0],
-                    end: data.labels[data.labels.length - 1],
-                  });
-                }
                 onReset();
               }}
               className='flex-1 bg-gray-100 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-200 transition-colors'

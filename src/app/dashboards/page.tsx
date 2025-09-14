@@ -118,8 +118,8 @@ export default function DashboardList() {
       </div>
 
       {dashboardToDelete && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center">
-          <div className="bg-white p-4 rounded-lg shadow-lg max-w-sm w-full">
+        <div className="fixed inset-0 bg-white/30 backdrop-blur-xs shadow-lg rounded-lg p-4 drag-cancel bg-transparent bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center">
+          <div className="bg-white p-4 rounded-lg shadow-xl max-w-sm w-full">
             <h2 className="text-xl font-bold mb-4">Confirm Delete</h2>
             <p className="mb-4">Are you sure you want to delete this dashboard?</p>
             <div className="flex justify-end space-x-2">

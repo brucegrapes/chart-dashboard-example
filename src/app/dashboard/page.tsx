@@ -4,16 +4,6 @@ import React from "react";
 import { useState, useEffect } from 'react';
 import { Layout } from "@/types/layout";
 import { DashboardService } from "@/services/dashboardService";
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend,
-  ArcElement,
-} from "chart.js";
 import { monthlySalesData, productPerformanceData, revenueDistributionData } from "@/utils/sampleData";
 import ReactGridLayout from "react-grid-layout";
 import BarChart from "@/components/Charts/BarChart";

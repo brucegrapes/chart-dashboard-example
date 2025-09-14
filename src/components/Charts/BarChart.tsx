@@ -38,6 +38,7 @@ interface BarChartProps {
   data: ChartData<"bar", number[], string>;
   options?: ChartOptions<"bar">;
   chartTitle?: string;
+  showFilters?: boolean;
 }
 
 function BarChart({
@@ -60,6 +61,7 @@ function BarChart({
               },
             }}
             data={data}
+            redraw
           />
         )}
       </ChartWithFilters>

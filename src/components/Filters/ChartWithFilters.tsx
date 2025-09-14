@@ -33,7 +33,9 @@ export default function ChartWithFilters({
         type={type}
         onReset={onReset}
       />
+      <div className='m-2'>
       {children({ data: filteredData })}
+      </div>
     </div>
   );
 }

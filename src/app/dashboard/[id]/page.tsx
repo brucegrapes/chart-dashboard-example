@@ -121,7 +121,6 @@ export default function DashboardPage({ params }: { params: { id: string } }) {
           >
             ← Back to Dashboards
           </button>
-         
          <h1 className='text-2xl font-bold'>{dashboardName}</h1>
         </div>
       </div>
