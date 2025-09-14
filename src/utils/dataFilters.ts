@@ -53,36 +53,6 @@ export const filterByLabels = (
 };
 
 /**
- * Filter by threshold value (e.g., show only products with sales > X)
- */
-export const filterByThreshold = (
-  data: BarChartData | PieChartData,
-  threshold: number,
-  comparison: 'greater' | 'less' | 'equal' = 'greater'
-): BarChartData | PieChartData => {
-  const indices = data.datasets[0].data.reduce<number[]>((acc, value, index) => {
-    if (comparison === 'greater' && value > threshold) acc.push(index);
-    if (comparison === 'less' && value < threshold) acc.push(index);
-    if (comparison === 'equal' && value === threshold) acc.push(index);
-    return acc;
-  }, []);
-
-  return {
-    labels: indices.map(i => data.labels[i]),
-    datasets: data.datasets.map(dataset => ({
-      ...dataset,
-      data: indices.map(i => dataset.data[i]),
-      backgroundColor: Array.isArray(dataset.backgroundColor)
-        ? indices.map(i => dataset.backgroundColor[i])
-        : dataset.backgroundColor,
-      borderColor: Array.isArray(dataset.borderColor)
-        ? indices.map(i => dataset.borderColor[i])
-        : dataset.borderColor,
-    })),
-  };
-};
-
-/**
  * Sort data by values
  */
 export const sortByValue = (

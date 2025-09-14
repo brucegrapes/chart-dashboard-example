@@ -117,7 +117,11 @@ export default function Home() {
             <Bar options={options} data={monthlySalesData}/>
           </div>
           <div key="chart2" className="bg-white rounded-lg shadow">
-            <Bar options={options2} data={productPerformanceData}/>
+            <ChartWithFilters initialData={productPerformanceData} type="bar">
+              {({ data }) => (
+                <Bar options={options2} data={data}/>
+              )}
+            </ChartWithFilters>
           </div>
           <div key="chart3" className="bg-white rounded-lg shadow">
             <ChartWithFilters initialData={revenueDistributionData} type="pie">
