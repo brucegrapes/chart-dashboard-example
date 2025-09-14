@@ -1,8 +1,9 @@
 "use client";
 
 import React from "react";
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Layout } from "@/types/layout";
+import { DashboardService } from "@/services/dashboardService";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -13,11 +14,10 @@ import {
   Legend,
   ArcElement,
 } from "chart.js";
-import { Bar, Pie } from "react-chartjs-2";
 import { monthlySalesData, productPerformanceData, revenueDistributionData } from "@/utils/sampleData";
 import ReactGridLayout from "react-grid-layout";
-import ChartWithFilters from "@/components/Filters/ChartWithFilters";
-//import RGL, { WidthProvider } from "react-grid-layout";
+import BarChart from "@/components/Charts/BarChart";
+import PieChart from "@/components/Charts/PieChart";
 
 ChartJS.register(
   CategoryScale,
@@ -72,16 +72,77 @@ const options3 = {
 
 
 export default function Home() {
-  const [layout, setLayout] = useState<Layout[]>([
+  const [dashboardId] = useState(() => 'default-dashboard'); // In a real app, this could come from URL params
+  const defaultLayout = React.useMemo(() => [
     { i: "chart1", x: 0, y: 0, w: 6, h: 3, minW: 4, maxW: 12, minH: 3, isResizable: true, isDraggable: true },
     { i: "chart2", x: 6, y: 0, w: 6, h: 3, minW: 4, maxW: 12, minH: 3, isResizable: true, isDraggable: true },
-    { i: "chart3", x: 6, y: 0, w: 6, h: 6, minW: 4, maxW: 12, minH: 3, isResizable: true, isDraggable: true },
-  ]);
+    { i: "chart3", x: 0, y: 3, w: 6, h: 6, minW: 4, maxW: 12, minH: 3, isResizable: true, isDraggable: true },
+  ], []);
 
-  const onLayoutChange = (newLayout: Layout[]) => {
-    console.log('Layout changed:', newLayout);
-    setLayout(newLayout);
-  };
+  const [layout, setLayout] = useState<Layout[]>(defaultLayout);
+  const [dashboardName, setDashboardName] = useState('My Dashboard');
+
+  const saveDashboardState = React.useCallback((currentLayout: Layout[]) => {
+    const currentDashboard = {
+      id: dashboardId,
+      name: dashboardName,
+      layout: currentLayout,
+      charts: {
+        chart1: {
+          type: 'bar' as const,
+          options: options,
+          data: monthlySalesData
+        },
+        chart2: {
+          type: 'bar' as const,
+          options: options2,
+          data: productPerformanceData
+        },
+        chart3: {
+          type: 'pie' as const,
+          options: options3,
+          data: revenueDistributionData
+        }
+      },
+      lastModified: new Date().toISOString()
+    };
+    DashboardService.saveDashboard(currentDashboard);
+  }, [dashboardId, dashboardName]);
+
+  // Load saved dashboard on mount
+  useEffect(() => {
+    const savedDashboard = DashboardService.getDashboard(dashboardId);
+    if (savedDashboard) {
+      setLayout(savedDashboard.layout || defaultLayout);
+      setDashboardName(savedDashboard.name);
+    } else {
+      // Initialize a new dashboard if none exists
+      const initialDashboard = {
+        id: dashboardId,
+        name: 'My Dashboard',
+        layout: defaultLayout,
+        charts: {
+          chart1: {
+            type: 'bar' as const,
+            options: options,
+            data: monthlySalesData
+          },
+          chart2: {
+            type: 'bar' as const,
+            options: options2,
+            data: productPerformanceData
+          },
+          chart3: {
+            type: 'pie' as const,
+            options: options3,
+            data: revenueDistributionData
+          }
+        },
+        lastModified: new Date().toISOString()
+      };
+      DashboardService.saveDashboard(initialDashboard);
+    }
+  }, [dashboardId, defaultLayout]);
 
   return (
     <div className="p-4">
@@ -89,9 +150,7 @@ export default function Home() {
         <h1 className="text-2xl font-bold">Dashboard</h1>
         <button
           className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-          onClick={() => {
-            console.log('Saving layout:', layout);
-          }}
+          onClick={() => saveDashboardState(layout)}
         >
           Save Layout
         </button>
@@ -106,7 +165,32 @@ export default function Home() {
           width={1200}
           isDraggable={true}
           isResizable={true}
-          //onLayoutChange={onLayoutChange}
+          onLayoutChange={(newLayout) => {
+            setLayout(newLayout);
+            DashboardService.saveDashboard({
+              id: dashboardId,
+              name: dashboardName,
+              layout: newLayout,
+              charts: {
+                chart1: {
+                  type: 'bar' as const,
+                  options: options,
+                  data: monthlySalesData
+                },
+                chart2: {
+                  type: 'bar' as const,
+                  options: options2,
+                  data: productPerformanceData
+                },
+                chart3: {
+                  type: 'pie' as const,
+                  options: options3,
+                  data: revenueDistributionData
+                }
+              },
+              lastModified: new Date().toISOString()
+            });
+          }}
           margin={[16, 16]}
           compactType={null}
           preventCollision={true}
@@ -114,49 +198,16 @@ export default function Home() {
           draggableCancel=".drag-cancel"
         >
           <div key="chart1" className="bg-white rounded-lg shadow">
-            <Bar options={options} data={monthlySalesData}/>
+            <BarChart options={options} data={monthlySalesData}/>
           </div>
           <div key="chart2" className="bg-white rounded-lg shadow">
-            <ChartWithFilters initialData={productPerformanceData} type="bar">
-              {({ data }) => (
-                <Bar options={options2} data={data}/>
-              )}
-            </ChartWithFilters>
+            <BarChart options={options2} data={productPerformanceData}/>
           </div>
           <div key="chart3" className="bg-white rounded-lg shadow">
-            <ChartWithFilters initialData={revenueDistributionData} type="pie">
-               {({ data }) => (
-                <Pie data={data} options={options3} />
-              )}
-            </ChartWithFilters>
+            <PieChart options={options3} data={revenueDistributionData}/>
           </div>
         </ReactGridLayout>
       </div>
     </div>
   );
 }
-
-type CustomGridItemComponentProps = React.PropsWithChildren<{
-  className?: string;
-  onMouseDown?: React.MouseEventHandler<HTMLDivElement>;
-  onMouseUp?: React.MouseEventHandler<HTMLDivElement>;
-  onTouchEnd?: React.TouchEventHandler<HTMLDivElement>;
-}>;
-
-const CustomGridItemComponent = React.forwardRef<HTMLDivElement, CustomGridItemComponentProps>(
-  ({ className, onMouseDown, onMouseUp, onTouchEnd, children }, ref) => {
-    return (
-      <div
-        className={`w-full h-full min-h-[400px] border border-gray-200 bg-white rounded-lg shadow-sm p-4 ${className}`}
-        ref={ref}
-        onMouseDown={onMouseDown}
-        onMouseUp={onMouseUp}
-        onTouchEnd={onTouchEnd}
-      >
-        {children}
-      </div>
-    );
-  }
-);
-
-CustomGridItemComponent.displayName = "CustomGridItemComponent";

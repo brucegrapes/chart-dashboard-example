@@ -21,12 +21,17 @@ export default function ChartWithFilters({
     setFilteredData(newData);
   };
 
+  const onReset = () => {
+    setFilteredData(initialData);
+  }
+
   return (
     <div className="space-y-4">
       <FilterPanel
         data={initialData}
         onFilter={handleFilter}
         type={type}
+        onReset={onReset}
       />
       {children({ data: filteredData })}
     </div>

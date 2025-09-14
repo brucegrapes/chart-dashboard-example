@@ -20,13 +20,10 @@ export default function FilterPanel({
   data,
   onFilter,
   type,
+  onReset
 }: FilterPanelProps) {
   const [searchText, setSearchText] = useState("");
   const [selectedLabels, setSelectedLabels] = useState<string[]>([]);
-  const [threshold, setThreshold] = useState<number>(0);
-  const [thresholdComparison, setThresholdComparison] = useState<
-    "greater" | "less" | "equal"
-  >("greater");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   const [topN, setTopN] = useState<number>(5);
   const [isExpanded, setIsExpanded] = useState(false);
@@ -37,6 +34,7 @@ export default function FilterPanel({
   });
 
   const applyFilters = () => {
+    debugger
     try {
       let filteredData = { ...data };
 
@@ -48,15 +46,6 @@ export default function FilterPanel({
       // 2. Apply label selection if any labels are selected
       if (selectedLabels.length > 0) {
         filteredData = filterByLabels(filteredData, selectedLabels);
-      }
-
-      // 3. Apply threshold filter if threshold is not 0
-      if (threshold !== 0) {
-        filteredData = filterByThreshold(
-          filteredData,
-          threshold,
-          thresholdComparison
-        );
       }
 
       // 4. Apply date range filter for bar charts
@@ -86,7 +75,7 @@ export default function FilterPanel({
   };
 
   return (
-    <div className='max-h-[100%] overflow-auto absolute bg-white/30 backdrop-blur-md shadow-lg rounded-lg p-4 drag-cancel'>
+    <div className='max-h-[100%] overflow-auto absolute bg-white/30 backdrop-blur-md shadow-lg rounded-lg p-4 drag-cancel bg-transparent'>
       <div className='flex justify-between items-center'>
         <button
           onClick={(e) => {
@@ -136,12 +125,21 @@ export default function FilterPanel({
                     type='checkbox'
                     checked={selectedLabels.includes(label)}
                     onChange={(e) => {
+                      const filteredData = { ...data };
+                      let selection;
                       if (e.target.checked) {
-                        setSelectedLabels([...selectedLabels, label]);
+                        selection = [...selectedLabels, label];
+                        setSelectedLabels(selection);
                       } else {
+                        selection = selectedLabels.filter((l) => l !== label);
                         setSelectedLabels(
-                          selectedLabels.filter((l) => l !== label)
+                          selection
                         );
+                      }
+                      if(selection.length > 0){
+                        onFilter(filterByLabels(filteredData, selection));
+                      }else{
+                        onFilter(data);
                       }
                     }}
                     className='rounded border-gray-300 text-blue-600 focus:ring-blue-500'
@@ -241,8 +239,6 @@ export default function FilterPanel({
                 // Reset all filters
                 setSearchText("");
                 setSelectedLabels([]);
-                setThreshold(0);
-                setThresholdComparison("greater");
                 setSortOrder("desc");
                 setTopN(5);
                 if (type === "bar") {
@@ -251,7 +247,7 @@ export default function FilterPanel({
                     end: data.labels[data.labels.length - 1],
                   });
                 }
-                onFilter(data);
+                onReset();
               }}
               className='flex-1 bg-gray-100 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-200 transition-colors'
             >
