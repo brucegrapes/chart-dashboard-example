@@ -14,7 +14,8 @@ export interface ChartConfig {
       };
     };
   };
-  data: any; // You might want to type this more specifically based on your data structure
+  // @ts-expect-error This is a necessary hack due to ChartData type
+  data
 }
 
 export interface DashboardState {

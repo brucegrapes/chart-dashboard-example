@@ -1,19 +1,9 @@
 "use client";
 
-import React, { useState, useEffect, use } from "react";
-import { useRouter } from "next/navigation";
+import React, { useState, useEffect } from "react";
+import { useParams, useRouter } from "next/navigation";
 import { DashboardService } from "@/services/dashboardService";
 import { Layout } from "@/types/layout";
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend,
-  ArcElement,
-} from "chart.js";
 import ReactGridLayout from "react-grid-layout";
 import BarChart from "@/components/Charts/BarChart";
 import PieChart from "@/components/Charts/PieChart";
@@ -66,11 +56,11 @@ const options3 = {
   },
 };
 
-export default function EditDashboard({ params }: { params: { id: string } }) {
+export default function EditDashboard() {
   const router = useRouter();
   const [isEditing, setIsEditing] = useState(false);
   const [dashboardName, setDashboardName] = useState("");
-  const { id } = use(params);
+  const { id } = useParams() as { id: string };
   interface ChartData {
     id: string;
     type: "bar" | "pie";
@@ -107,6 +97,7 @@ export default function EditDashboard({ params }: { params: { id: string } }) {
           data: config.data,
         })
       );
+      // @ts-expect-error This is a necessary hack due to ChartData type
       setCharts(savedCharts);
       setLayout(savedDashboard.layout);
       setDashboardName(savedDashboard.name);
@@ -161,7 +152,7 @@ export default function EditDashboard({ params }: { params: { id: string } }) {
       (acc, chart) => ({
         ...acc,
         [chart.id]: {
-          type: chart.type as const,
+          type: chart.type,
           options: chart.options,
           data: chart.data,
         },

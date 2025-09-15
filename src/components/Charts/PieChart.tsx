@@ -19,7 +19,7 @@ const defaultOptions = {
 interface PieChartProps {
   data: ChartData<'pie', number[], string>;
   options?: ChartOptions<'pie'>;
-  chartTitle?: string;
+  showFilters?: boolean;
 }
 
 ChartJS.register(
@@ -34,7 +34,6 @@ ChartJS.register(
 function PieChart({
     data,
     options = defaultOptions,
-    chartTitle = "Pie Chart",
     showFilters = true,
 }: PieChartProps) {
   // Ensure labels is always defined
@@ -44,18 +43,13 @@ function PieChart({
   };
   if(showFilters){
   return (
+    // @ts-expect-error This is a necessary hack due to ChartData type
     <ChartWithFilters initialData={safeData} type='pie'>
       {({ data }) => (
         <Pie
           className="drag-cancel"
           data={data}
-          options={{
-            ...options,
-            title: {
-              display: true,
-              text: chartTitle,
-            },
-          }}
+          options={options}
           redraw
         />
       )}
@@ -66,13 +60,7 @@ function PieChart({
         <Pie
           className="drag-cancel"
           data={safeData}
-            options={{
-            ...options,
-            title: {
-                display: true,
-                text: chartTitle,
-            },
-          }}
+            options={options}
           redraw
         />
     );

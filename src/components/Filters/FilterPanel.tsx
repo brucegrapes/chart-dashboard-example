@@ -3,14 +3,11 @@
 import { useEffect, useState } from "react";
 import { BarChartData, PieChartData } from "@/utils/sampleData";
 import {
-  filterByDateRange,
   filterByLabels,
   sortByValue,
   takeTop,
   searchByLabel,
 } from "@/utils/dataFilters";
-import { debounce } from "chart.js/helpers";
-
 
 interface FilterPanelProps {
   data: BarChartData | PieChartData;
@@ -23,19 +20,18 @@ export default function FilterPanel({
   data,
   onFilter,
   type,
-  onReset
+  onReset,
 }: FilterPanelProps) {
   const [searchText, setSearchText] = useState("");
   const [selectedLabels, setSelectedLabels] = useState<string[]>([]);
   const [sortOrder, setSortOrder] = useState<"asc" | "desc" | "none">("none");
   const [topN, setTopN] = useState<number>(data.labels.length);
   const [isExpanded, setIsExpanded] = useState(false);
-  const filteredData = { ...data };
 
-    const applyFilters = () => {
+  const applyFilters = () => {
     try {
       let filteredData = { ...data };
-      if(searchText.trim() !== ""){
+      if (searchText.trim() !== "") {
         filteredData = searchByLabel(filteredData, searchText.trim());
       }
       if (selectedLabels.length > 0) {
@@ -49,33 +45,26 @@ export default function FilterPanel({
       }
       onFilter(filteredData);
     } catch (error) {
-      console.error("Error applying filters:", error);
+      console.error("Error applying filters:", error, type);
       // In case of error, return original data
       onFilter(data);
     }
   };
 
-  useEffect(applyFilters, [
-    searchText,
-    selectedLabels,
-    sortOrder,
-    topN,
-    data
-  ])
-
-
-  function searchLabels(text: string) {
-    onFilter(searchByLabel({...filteredData}, text))
-  }
-
+  // ignoring onFilter as its a function prop that will always be different
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(applyFilters, [searchText, selectedLabels, sortOrder, topN, data, type]);
 
   return (
-    <div 
-      className={`max-h-[100%] overflow-auto absolute bg-white/30 backdrop-blur-sm ${isExpanded ? 'shadow-lg' : ''} rounded-lg p-4 drag-cancel bg-transparent`}
-      style={{ backgroundColor: 'transparent'}}
-      >
+    <div
+      className={`max-h-[100%] overflow-auto absolute bg-white/30 backdrop-blur-sm ${
+        isExpanded ? "shadow-lg" : ""
+      } rounded-lg p-4 drag-cancel bg-transparent`}
+      style={{ backgroundColor: "transparent" }}
+    >
       <div className='flex justify-between items-center'>
         <button
+          title={isExpanded ? "Collapse filter panel" : "Expand filter panel"}
           onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();
@@ -101,8 +90,8 @@ export default function FilterPanel({
             <input
               type='text'
               value={searchText}
-              onChange={(e) => { 
-                setSearchText(e.target.value)
+              onChange={(e) => {
+                setSearchText(e.target.value);
               }}
               placeholder='Search...'
               className='w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500'
@@ -130,9 +119,7 @@ export default function FilterPanel({
                         setSelectedLabels(selection);
                       } else {
                         selection = selectedLabels.filter((l) => l !== label);
-                        setSelectedLabels(
-                          selection
-                        );
+                        setSelectedLabels(selection);
                       }
                     }}
                     className='rounded border-gray-300 text-blue-600 focus:ring-blue-500'
@@ -150,9 +137,9 @@ export default function FilterPanel({
             </label>
             <select
               value={sortOrder}
-              onChange={(e) => { 
-                const selectedValue = e.target.value as "asc" | "desc"
-                setSortOrder(selectedValue)
+              onChange={(e) => {
+                const selectedValue = e.target.value as "asc" | "desc";
+                setSortOrder(selectedValue);
               }}
               className='w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500'
               aria-label='Sort order'
@@ -174,9 +161,9 @@ export default function FilterPanel({
               min='1'
               max={data.labels.length}
               value={topN}
-              onChange={(e) => { 
-                const currentTopN = Number(e.target.value)
-                setTopN(currentTopN)
+              onChange={(e) => {
+                const currentTopN = Number(e.target.value);
+                setTopN(currentTopN);
               }}
               className='w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500'
               aria-label='Number of items to show'

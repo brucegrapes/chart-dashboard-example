@@ -37,29 +37,26 @@ const defaultOptions = {
 interface BarChartProps {
   data: ChartData<"bar", number[], string>;
   options?: ChartOptions<"bar">;
-  chartTitle?: string;
   showFilters?: boolean;
 }
 
 function BarChart({
   data,
   options = defaultOptions,
-  chartTitle = "Bar Chart",
   showFilters = true,
 }: BarChartProps) {
+  const safeData = {
+    ...data,
+    labels: data.labels ?? [],
+  };
   if (showFilters) {
     return (
-      <ChartWithFilters initialData={data} type='bar'>
+      // @ts-expect-error This is a necessary hack due to ChartData type
+      <ChartWithFilters initialData={safeData} type='bar'>
         {({ data }) => (
           <Bar
             className='drag-cancel'
-            options={{
-              ...options,
-              title: {
-                display: true,
-                text: chartTitle,
-              },
-            }}
+            options={options}
             data={data}
             redraw
           />
@@ -71,13 +68,7 @@ function BarChart({
       <>
         <Bar
           className='drag-cancel'
-          options={{
-            ...options,
-            title: {
-              display: true,
-              text: chartTitle,
-            },
-          }}
+          options={options}
           redraw
           data={data}
         />

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, use } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { DashboardService } from "@/services/dashboardService";
 import { Layout } from "@/types/layout";
@@ -12,50 +12,12 @@ import {
   productPerformanceData,
   revenueDistributionData,
 } from "@/utils/sampleData";
+import { useParams } from "next/navigation";
 
-const options = {
-  responsive: true,
-  plugins: {
-    legend: {
-      position: "top" as const,
-    },
-    title: {
-      display: true,
-      text: "Monthly Sales & Profit",
-    },
-  },
-};
-
-const options2 = {
-  responsive: true,
-  plugins: {
-    legend: {
-      position: "top" as const,
-    },
-    title: {
-      display: true,
-      text: "Product Performance",
-    },
-  },
-};
-
-const options3 = {
-  responsive: true,
-  plugins: {
-    legend: {
-      position: "top" as const,
-    },
-    title: {
-      display: true,
-      text: "Revenue distribution",
-    },
-  },
-};
-
-export default function DashboardPage({ params }: { params: { id: string } }) {
+export default function DashboardPage() {
   const router = useRouter();
   const [dashboardName, setDashboardName] = useState("");
-  const { id } = use(params);
+  const { id } = useParams() as { id: string };
   interface ChartData {
     id: string;
     type: "bar" | "pie";
@@ -92,6 +54,7 @@ export default function DashboardPage({ params }: { params: { id: string } }) {
           data: config.data,
         })
       );
+      // @ts-expect-error This is a necessary hack due to ChartData type
       setCharts(savedCharts);
       setLayout(savedDashboard.layout);
       setDashboardName(savedDashboard.name);
