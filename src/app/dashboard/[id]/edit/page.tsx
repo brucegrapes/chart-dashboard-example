@@ -59,6 +59,7 @@ const options3 = {
 export default function EditDashboard() {
   const router = useRouter();
   const [isEditing, setIsEditing] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [dashboardName, setDashboardName] = useState("");
   const { id } = useParams() as { id: string };
   interface ChartData {
@@ -148,6 +149,7 @@ export default function EditDashboard() {
   };
 
   const handleSave = () => {
+    setSaving(true);
     const chartConfigs = charts.reduce(
       (acc, chart) => ({
         ...acc,
@@ -169,6 +171,7 @@ export default function EditDashboard() {
     };
     DashboardService.saveDashboard(currentDashboard);
     setIsEditing(false);
+    setSaving(false);
   };
 
   return (
@@ -202,10 +205,11 @@ export default function EditDashboard() {
           </button>
         </div>
         <button
-          className='px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors'
+          className={`px-4 py-2 ${saving ? 'bg-red-400': 'bg-blue-600 hover:bg-blue-700'} text-white rounded-lg  transition-colors`}
           onClick={handleSave}
-        >
-          Save Layout
+          disabled={saving}
+        >{
+          saving ? "Please Wait..." : "Save Layout"}
         </button>
       </div>
 
@@ -217,12 +221,11 @@ export default function EditDashboard() {
               layout={layout}
               cols={12}
               rowHeight={100}
-              width={1200}
+              width={1500}
               isDraggable={true}
               isResizable={true}
               onLayoutChange={(newLayout) => {
                 setLayout(newLayout);
-                handleSave();
               }}
               margin={[16, 16]}
               compactType={null}
