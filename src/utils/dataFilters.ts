@@ -1,33 +1,6 @@
 import { BarChartData, PieChartData } from './sampleData';
 
 /**
- * Filter data by date range for monthly sales data
- */
-export const filterByDateRange = (
-  data: BarChartData,
-  startDate: string,
-  endDate: string
-): BarChartData => {
-  const startIndex = data.labels.findIndex(label => label >= startDate);
-  const endIndex = data.labels.findIndex(label => label > endDate);
-  const sliceEnd = endIndex === -1 ? data.labels.length : endIndex;
-
-  return {
-    labels: data.labels.slice(startIndex, sliceEnd),
-    datasets: data.datasets.map(dataset => ({
-      ...dataset,
-      data: dataset.data.slice(startIndex, sliceEnd),
-      backgroundColor: Array.isArray(dataset.backgroundColor)
-        ? dataset.backgroundColor.slice(startIndex, sliceEnd)
-        : dataset.backgroundColor,
-      borderColor: Array.isArray(dataset.borderColor)
-        ? dataset.borderColor.slice(startIndex, sliceEnd)
-        : dataset.borderColor,
-    })),
-  };
-};
-
-/**
  * Filter data by specific labels
  */
 export const filterByLabels = (

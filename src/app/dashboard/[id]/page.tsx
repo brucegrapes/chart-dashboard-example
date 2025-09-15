@@ -4,16 +4,6 @@ import React, { useState, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
 import { DashboardService } from "@/services/dashboardService";
 import { Layout } from "@/types/layout";
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend,
-  ArcElement,
-} from "chart.js";
 import ReactGridLayout from "react-grid-layout";
 import BarChart from "@/components/Charts/BarChart";
 import PieChart from "@/components/Charts/PieChart";
@@ -22,9 +12,6 @@ import {
   productPerformanceData,
   revenueDistributionData,
 } from "@/utils/sampleData";
-import ChartSelector, {
-  AvailableChart,
-} from "@/components/ChartSelector/ChartSelector";
 
 const options = {
   responsive: true,
@@ -116,7 +103,7 @@ export default function DashboardPage({ params }: { params: { id: string } }) {
       <div className='mb-6 flex justify-between items-center'>
         <div className='flex items-center gap-4'>
           <button
-            onClick={() => router.push("/dashboards")}
+            onClick={() => router.push("/")}
             className='text-blue-600 hover:text-blue-800'
           >
             ← Back to Dashboards

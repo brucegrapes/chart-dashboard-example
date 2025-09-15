@@ -185,7 +185,7 @@ export default function EditDashboard({ params }: { params: { id: string } }) {
       <div className='mb-6 flex justify-between items-center'>
         <div className='flex items-center gap-4'>
           <button
-            onClick={() => router.push("/dashboards")}
+            onClick={() => router.push("/")}
             className='text-blue-600 hover:text-blue-800'
           >
             ← Back to Dashboards

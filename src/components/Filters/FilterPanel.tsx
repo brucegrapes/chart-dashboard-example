@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { BarChartData, PieChartData } from "@/utils/sampleData";
 import {
   filterByDateRange,
@@ -16,6 +16,7 @@ interface FilterPanelProps {
   data: BarChartData | PieChartData;
   onFilter: (filteredData: BarChartData | PieChartData) => void;
   type: "bar" | "pie";
+  onReset: () => void;
 }
 
 export default function FilterPanel({
@@ -29,20 +30,23 @@ export default function FilterPanel({
   const [sortOrder, setSortOrder] = useState<"asc" | "desc" | "none">("none");
   const [topN, setTopN] = useState<number>(data.labels.length);
   const [isExpanded, setIsExpanded] = useState(false);
+  const filteredData = { ...data };
 
-  const applyFilters = () => {
-    debugger
+    const applyFilters = () => {
     try {
       let filteredData = { ...data };
-      // 5. Apply sorting
-      filteredData = sortByValue(filteredData, sortOrder);
-
-      // 6. Apply top N filter if it's less than total items
+      if(searchText.trim() !== ""){
+        filteredData = searchByLabel(filteredData, searchText.trim());
+      }
+      if (selectedLabels.length > 0) {
+        filteredData = filterByLabels(filteredData, selectedLabels);
+      }
+      if (sortOrder !== "none") {
+        filteredData = sortByValue(filteredData, sortOrder);
+      }
       if (topN > 0 && topN < data.labels.length) {
         filteredData = takeTop(filteredData, topN);
       }
-
-      // Send filtered data to parent component
       onFilter(filteredData);
     } catch (error) {
       console.error("Error applying filters:", error);
@@ -50,6 +54,15 @@ export default function FilterPanel({
       onFilter(data);
     }
   };
+
+  useEffect(applyFilters, [
+    searchText,
+    selectedLabels,
+    sortOrder,
+    topN,
+    data
+  ])
+
 
   function searchLabels(text: string) {
     onFilter(searchByLabel({...filteredData}, text))
@@ -90,7 +103,6 @@ export default function FilterPanel({
               value={searchText}
               onChange={(e) => { 
                 setSearchText(e.target.value)
-                debounce(searchLabels(e.target.value.trim()), 300);
               }}
               placeholder='Search...'
               className='w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500'
@@ -122,11 +134,6 @@ export default function FilterPanel({
                           selection
                         );
                       }
-                      if(selection.length > 0){
-                        onFilter(filterByLabels(filteredData, selection));
-                      }else{
-                        onFilter(data);
-                      }
                     }}
                     className='rounded border-gray-300 text-blue-600 focus:ring-blue-500'
                   />
@@ -146,11 +153,6 @@ export default function FilterPanel({
               onChange={(e) => { 
                 const selectedValue = e.target.value as "asc" | "desc"
                 setSortOrder(selectedValue)
-                if(e.target.value === "none"){
-                  onFilter(data);
-                }else{
-                  onFilter(sortByValue(filteredData, selectedValue));
-                }
               }}
               className='w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500'
               aria-label='Sort order'
@@ -175,9 +177,6 @@ export default function FilterPanel({
               onChange={(e) => { 
                 const currentTopN = Number(e.target.value)
                 setTopN(currentTopN)
-                if (currentTopN > 0 && currentTopN < data.labels.length) {
-                  onFilter(takeTop(filteredData, topN));
-                }
               }}
               className='w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500'
               aria-label='Number of items to show'
@@ -189,18 +188,12 @@ export default function FilterPanel({
           {/* Action Buttons */}
           <div className='flex space-x-2 pt-4'>
             <button
-              onClick={applyFilters}
-              className='flex-1 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors'
-            >
-              Apply Filters
-            </button>
-            <button
               onClick={() => {
                 // Reset all filters
                 setSearchText("");
                 setSelectedLabels([]);
-                setSortOrder("desc");
-                setTopN(5);
+                setSortOrder("none");
+                setTopN(data.labels.length);
                 onReset();
               }}
               className='flex-1 bg-gray-100 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-200 transition-colors'
