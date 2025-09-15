@@ -93,7 +93,7 @@ const defaultLayout = [
   },
 ];
 const dashboardId = "default-dashboard";
-const initialDashboard = {
+const initialDashboard: SavedDashboard = {
   id: dashboardId,
   name: "My Dashboard",
   layout: defaultLayout,
@@ -114,6 +114,7 @@ const initialDashboard = {
       data: revenueDistributionData,
     },
   },
+  createdAt: new Date().toISOString(),
   lastModified: new Date().toISOString(),
 };
 
